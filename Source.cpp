@@ -4,6 +4,7 @@
 #include <set>
 #include <map>
 #include <algorithm>
+#include <exception>
 
 using namespace std;
 
@@ -40,7 +41,9 @@ int NOD(int a, int b) {
 }
 
 Rational::Rational(long long numerator, long long denominator) {
-	if (numerator == 0) {
+	if(denominator == 0)
+		throw invalid_argument("Invalid argument");
+	else if (numerator == 0) {
 		_numerator = 0;
 		_denominator = 1;
 	}
@@ -52,44 +55,46 @@ Rational::Rational(long long numerator, long long denominator) {
 	}
 }
 
-bool operator== (const Rational& l, const Rational& r) {
+bool operator== (const Rational & l, const Rational & r) {
 	if (l.Numerator() == r.Numerator() && l.Denominator() == r.Denominator())
 		return true;
 	return false;
 }
 
-bool operator< (const Rational& l, const Rational& r) {
+bool operator< (const Rational & l, const Rational & r) {
 	if (l.Numerator() * r.Denominator() < l.Denominator() * r.Numerator())
 		return true;
 	return false;
 }
 
-const Rational operator+ (const Rational& l, const Rational& r) {
+const Rational operator+ (const Rational & l, const Rational & r) {
 	return Rational(l.Numerator() * r.Denominator() + l.Denominator() * r.Numerator(),
 		l.Denominator() * r.Denominator());
 }
 
-const Rational operator- (const Rational& l, const Rational& r) {
+const Rational operator- (const Rational & l, const Rational & r) {
 	return Rational(l.Numerator() * r.Denominator() - l.Denominator() * r.Numerator(),
 		l.Denominator() * r.Denominator());
 }
 
-const Rational operator* (const Rational& l, const Rational& r) {
+const Rational operator* (const Rational & l, const Rational & r) {
 	return Rational(l.Numerator() * r.Numerator(),
 		l.Denominator() * r.Denominator());
 }
 
-const Rational operator/ (const Rational& l, const Rational& r) {
+const Rational operator/ (const Rational & l, const Rational & r) {
+	if (r.Numerator() == 0)
+		throw domain_error("Division by zero");
 	return Rational(l.Numerator() * r.Denominator(),
 		l.Denominator() * r.Numerator());
 }
 
-ostream& operator<< (ostream& os, const Rational& x) {
+ostream& operator<< (ostream & os, const Rational & x) {
 	os << x.Numerator() << "/" << x.Denominator();
 	return os;
 }
 
-istream& operator>> (istream& is, Rational& x) {
+istream& operator>> (istream & is, Rational & x) {
 	if (!is)
 		return is;
 	int n, d;
@@ -102,37 +107,28 @@ istream& operator>> (istream& is, Rational& x) {
 	return is;
 }
 
+Rational Calc(const Rational& l, const Rational& r, char operation) {
+	if (operation == '+')
+		return l + r;
+	else if (operation == '-')
+		return l - r;
+	else if (operation == '*')
+		return l * r;
+	else if (operation == '/')
+		return l / r;
+}
+
 int main() {
-	{
-		const set<Rational> rs = { {1, 2}, {1, 25}, {3, 4}, {3, 4}, {1, 2} };
-		if (rs.size() != 3) {
-			cout << "Wrong amount of items in the set" << endl;
-			return 1;
-		}
-
-		vector<Rational> v;
-		for (auto x : rs) {
-			v.push_back(x);
-		}
-		if (v != vector<Rational>{ {1, 25}, { 1, 2 }, { 3, 4 }}) {
-			cout << "Rationals comparison works incorrectly" << endl;
-			return 2;
-		}
+	
+	try {
+		Rational a, b;
+		char operation;
+		cin >> a >> operation >> b;;
+		cout << Calc(a, b, operation) << endl;
+	}
+	catch (exception& e) {
+		cout << e.what() << endl;
 	}
 
-	{
-		map<Rational, int> count;
-		++count[{1, 2}];
-		++count[{1, 2}];
-
-		++count[{2, 3}];
-
-		if (count.size() != 2) {
-			cout << "Wrong amount of items in the map" << endl;
-			return 3;
-		}
-	}
-
-	cout << "OK" << endl;
 	return 0;
 }
